@@ -262,8 +262,13 @@ def edit(entry_id):
             entry_date = request.form.get('entry_date')
             entry_time = request.form.get('entry_time', '00:00')
             datetime_str = f"{entry_date} {entry_time}"
-            # Keep the timestamp as-is, matching how it's displayed
-            e.created_at = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
+            # Parse input and store as Thailand timezone-aware datetime
+            parsed = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
+            if parsed.tzinfo is None:
+                created_at = TH_TZ.localize(parsed)
+            else:
+                created_at = parsed.astimezone(TH_TZ)
+            e.created_at = created_at
         except (ValueError, TypeError):
             flash('รูปแบบวันที่หรือเวลาไม่ถูกต้อง')
             return redirect(url_for('edit', entry_id=entry_id))

@@ -35,11 +35,11 @@
   </div>
   <div class="mb-2">
     <label>วันที่</label>
-    <input type="date" name="entry_date" class="form-control" value="{{ entry.created_at.strftime('%Y-%m-%d') }}" required>
+    <input type="date" name="entry_date" class="form-control" value="{{ to_thai_time(entry.created_at).strftime('%Y-%m-%d') }}" required>
   </div>
   <div class="mb-2">
     <label>เวลา</label>
-    <input type="time" name="entry_time" class="form-control" value="{{ entry.created_at.strftime('%H:%M') }}" required>
+    <input type="time" name="entry_time" class="form-control" value="{{ to_thai_time(entry.created_at).strftime('%H:%M') }}" required>
   </div>
   <button class="btn btn-primary">บันทึก</button>
 </form>
