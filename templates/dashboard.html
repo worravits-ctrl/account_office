@@ -1,0 +1,151 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    <h5>สรุปยอด</h5>
+    <ul class="list-group">
+      <li class="list-group-item">ยอดวันนี้: {{ sums.daily }}</li>
+      <li class="list-group-item">ยอดเดือนนี้: {{ sums.monthly }}</li>
+      <li class="list-group-item">ยอดปีนี้: {{ sums.yearly }}</li>
+    </ul>
+
+    <hr>
+    <h5>เพิ่มรายการ</h5>
+    <form method="post" action="{{ url_for('add_entry') }}">
+      <div class="mb-2">
+        <label>ประเภท</label>
+        <select name="kind" class="form-select">
+        <option value="income">รายรับ</option>
+        <option value="expense">รายจ่าย</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label>เลือกหมวด</label>
+        <select name="category" class="form-select">
+          <option value="">-- เลือก --</option>
+          {% for it in income_lookup %}
+            <option value="{{ it }}">{{ it }}</option>
+          {% endfor %}
+          {% for it in expense_lookup %}
+            <option value="{{ it }}">{{ it }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-2">
+        <label>หรือพิมพ์ชื่อรายการ</label>
+        <input name="custom_name" class="form-control">
+      </div>
+      <div class="mb-2">
+        <label>จำนวน</label>
+        <input name="amount" class="form-control" required>
+      </div>
+      <div class="mb-2">
+        <label>หมายเหตุ</label>
+        <input name="notes" class="form-control">
+      </div>
+      <button class="btn btn-primary">บันทึก</button>
+    </form>
+
+    <hr>
+    <form method="post" action="{{ url_for('delete_all') }}" onsubmit="return confirm('ลบทั้งหมด?')">
+      <button class="btn btn-danger">ลบรายการทั้งหมด</button>
+    </form>
+
+    <hr>
+    <h5>นำเข้า / ส่งออก CSV</h5>
+    <form method="post" action="{{ url_for('import_csv') }}" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".csv" class="form-control mb-2">
+      <button class="btn btn-secondary">นำเข้า</button>
+    </form>
+    <a class="btn btn-outline-success mt-2" href="{{ url_for('export_csv') }}">ส่งออก CSV</a>
+  </div>
+
+  <div class="col-md-8">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5>รายการล่าสุด</h5>
+      <form class="d-flex" method="get" action="{{ url_for('dashboard') }}">
+        <input name="q" value="{{ q or '' }}" class="form-control me-2" placeholder="ค้นหา">
+        <button class="btn btn-outline-primary">ค้นหา</button>
+      </form>
+    </div>
+
+    <table class="table table-sm mt-2">
+      <thead>
+        <tr><th>วันที่</th><th>รายการ</th><th>ประเภท</th><th>จำนวน</th><th>คำสั่ง</th></tr>
+      </thead>
+      <tbody>
+        {% for e in pagination.items %}
+          <tr>
+            <td>{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ e.category or e.custom_name }}</td>
+            <td>{{ 'รายรับ' if e.is_income else 'รายจ่าย' }}</td>
+            <td>{{ '%.2f'|format(e.amount) }}</td>
+            <td>
+              <form method="post" action="{{ url_for('delete', entry_id=e.id) }}" style="display:inline" onsubmit="return confirm('ลบรายการนี้?')">
+                <button class="btn btn-sm btn-danger">ลบ</button>
+              </form>
+              <a class="btn btn-sm btn-secondary" href="{{ url_for('edit', entry_id=e.id) }}">แก้ไข</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <nav>
+      <ul class="pagination">
+        {% if pagination.has_prev %}
+          <li class="page-item"><a class="page-link" href="?page={{ pagination.prev_num }}">ก่อนหน้า</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">หน้า {{ pagination.page }} / {{ pagination.pages or 1 }}</span></li>
+        {% if pagination.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ pagination.next_num }}">ถัดไป</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    <hr>
+    <h5>Chart</h5>
+    <div class="row mb-2">
+      <div class="col-md-3">
+        <select id="chart-kind" class="form-select">
+        <option value="income">รายรับ</option>
+        <option value="expense">รายจ่าย</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input id="chart-month" type="number" min="1" max="12" value="{{ month }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <input id="chart-year" type="number" min="2000" value="{{ year }}" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <button id="load-chart" class="btn btn-primary">โหลด</button>
+      </div>
+    </div>
+    <div style="width: 70%; margin: 0 auto;">
+      <canvas id="pieChart"></canvas>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-body">
+        <h6 class="card-title">สรุปยอดประจำเดือน {{ month }}/{{ year }}</h6>
+        <div class="row text-center">
+          <div class="col-md-4">
+            <div class="text-success">รายรับรวม</div>
+            <div class="h5" data-summary="income">{{ '%.2f'|format(monthly_stats.income) if monthly_stats else '0.00' }}</div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-danger">รายจ่ายรวม</div>
+            <div class="h5" data-summary="expense">{{ '%.2f'|format(monthly_stats.expense) if monthly_stats else '0.00' }}</div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-primary">คงเหลือ</div>
+            <div class="h5" data-summary="balance">{{ '%.2f'|format(monthly_stats.balance) if monthly_stats else '0.00' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/static/main.js"></script>
+{% endblock %}

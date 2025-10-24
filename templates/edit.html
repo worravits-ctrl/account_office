@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h3>แก้ไขรายการ</h3>
+<form method="post">
+  <div class="mb-2">
+    <label>ประเภท</label>
+    <select name="kind" class="form-select">
+      <option value="expense" {% if not entry.is_income %}selected{% endif %}>รายจ่าย</option>
+      <option value="income" {% if entry.is_income %}selected{% endif %}>รายรับ</option>
+    </select>
+  </div>
+  <div class="mb-2">
+    <label>เลือกหมวด</label>
+    <select name="category" class="form-select">
+      <option value="">-- เลือก --</option>
+      {% for it in income_lookup %}
+        <option value="{{ it }}" {% if entry.category==it %}selected{% endif %}>{{ it }}</option>
+      {% endfor %}
+      {% for it in expense_lookup %}
+        <option value="{{ it }}" {% if entry.category==it %}selected{% endif %}>{{ it }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-2">
+    <label>หรือพิมพ์ชื่อรายการ</label>
+    <input name="custom_name" class="form-control" value="{{ entry.custom_name }}">
+  </div>
+  <div class="mb-2">
+    <label>จำนวน</label>
+    <input name="amount" class="form-control" value="{{ entry.amount }}">
+  </div>
+  <div class="mb-2">
+    <label>หมายเหตุ</label>
+    <input name="notes" class="form-control" value="{{ entry.notes }}">
+  </div>
+  <div class="mb-2">
+    <label>วันที่</label>
+    <input type="date" name="entry_date" class="form-control" value="{{ entry.created_at.strftime('%Y-%m-%d') }}" required>
+  </div>
+  <div class="mb-2">
+    <label>เวลา</label>
+    <input type="time" name="entry_time" class="form-control" value="{{ entry.created_at.strftime('%H:%M') }}" required>
+  </div>
+  <button class="btn btn-primary">บันทึก</button>
+</form>
+{% endblock %}
