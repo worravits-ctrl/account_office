@@ -19,8 +19,20 @@ DB_PATH = os.path.join(BASE_DIR, 'data.db')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET', 'dev-secret')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
+
+# Use PostgreSQL URL from Railway in production, fallback to SQLite for local development
+DATABASE_URL = os.environ.get('DATABASE_URL', f'sqlite:///{DB_PATH}')
+if DATABASE_URL.startswith('postgres://'):
+    # Replace postgres:// with postgresql:// for SQLAlchemy
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Enable production mode if not in debug
+if not os.environ.get('FLASK_DEBUG', False):
+    app.config['ENV'] = 'production'
+    app.config['DEBUG'] = False
 
 # Add to_thai_time to template context
 @app.context_processor
