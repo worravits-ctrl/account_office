@@ -1,24 +1,38 @@
 {% extends 'layout.html' %}
 {% block content %}
-<div class="row">
-  <div class="col-md-4">
-    <h5>สรุปยอด</h5>
-    <ul class="list-group">
-      <li class="list-group-item">ยอดวันนี้: {{ sums.daily }}</li>
-      <li class="list-group-item">ยอดเดือนนี้: {{ sums.monthly }}</li>
-      <li class="list-group-item">ยอดปีนี้: {{ sums.yearly }}</li>
-    </ul>
-
-    <hr>
-    <h5>เพิ่มรายการ</h5>
-    <form method="post" action="{{ url_for('add_entry') }}">
-      <div class="mb-2">
-        <label>ประเภท</label>
-        <select name="kind" class="form-select">
-        <option value="income">รายรับ</option>
-        <option value="expense">รายจ่าย</option>
-        </select>
+<div class="row g-3">
+  <div class="col-lg-4 col-md-12">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">สรุปยอด</h5>
+        <ul class="list-group">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>ยอดวันนี้</span>
+            <span class="badge bg-primary rounded-pill">{{ '%.2f'|format(sums.daily) }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>ยอดเดือนนี้</span>
+            <span class="badge bg-primary rounded-pill">{{ '%.2f'|format(sums.monthly) }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>ยอดปีนี้</span>
+            <span class="badge bg-primary rounded-pill">{{ '%.2f'|format(sums.yearly) }}</span>
+          </li>
+        </ul>
       </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">เพิ่มรายการ</h5>
+        <form method="post" action="{{ url_for('add_entry') }}">
+          <div class="mb-3">
+            <label class="form-label">ประเภท</label>
+            <select name="kind" class="form-select form-select-sm">
+              <option value="income">รายรับ</option>
+              <option value="expense">รายจ่าย</option>
+            </select>
+          </div>
       <div class="mb-2">
         <label>เลือกหมวด</label>
         <select name="category" class="form-select">
@@ -39,20 +53,46 @@
         <label>จำนวน</label>
         <input name="amount" class="form-control" required>
       </div>
-      <div class="mb-2">
-        <label>หมายเหตุ</label>
-        <input name="notes" class="form-control">
+          <div class="mb-3">
+            <label class="form-label">หมายเหตุ</label>
+            <input name="notes" class="form-control form-control-sm">
+          </div>
+          <button class="btn btn-primary btn-sm w-100">บันทึก</button>
+        </form>
       </div>
-      <button class="btn btn-primary">บันทึก</button>
-    </form>
+    </div>
 
-    <hr>
-    <form method="post" action="{{ url_for('delete_all') }}" onsubmit="return confirm('ลบทั้งหมด?')">
-      <button class="btn btn-danger">ลบรายการทั้งหมด</button>
-    </form>
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title mb-0">จัดการข้อมูล</h5>
+        </div>
+        <div class="d-grid gap-2">
+          <form method="post" action="{{ url_for('delete_all') }}" onsubmit="return confirm('ลบทั้งหมด?')" class="mb-2">
+            <button class="btn btn-danger btn-sm w-100">ลบรายการทั้งหมด</button>
+          </form>
+          <div class="btn-group w-100">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+              นำเข้า CSV
+            </button>
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_csv') }}">ส่งออก CSV</a>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <hr>
-    <h5>นำเข้า / ส่งออก CSV</h5>
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">นำเข้าไฟล์ CSV</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" action="{{ url_for('import_csv') }}" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label class="form-label">เลือกไฟล์ CSV</label>
     <form method="post" action="{{ url_for('import_csv') }}" enctype="multipart/form-data">
       <input type="file" name="file" accept=".csv" class="form-control mb-2">
       <button class="btn btn-secondary">นำเข้า</button>
@@ -60,16 +100,21 @@
     <a class="btn btn-outline-success mt-2" href="{{ url_for('export_csv') }}">ส่งออก CSV</a>
   </div>
 
-  <div class="col-md-8">
-    <div class="d-flex justify-content-between align-items-center">
-      <h5>รายการล่าสุด</h5>
-      <form class="d-flex" method="get" action="{{ url_for('dashboard') }}">
-        <input name="q" value="{{ q or '' }}" class="form-control me-2" placeholder="ค้นหา">
-        <button class="btn btn-outline-primary">ค้นหา</button>
-      </form>
-    </div>
+  <div class="col-lg-8 col-md-12">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+          <h5 class="card-title mb-0">รายการล่าสุด</h5>
+          <form class="d-flex w-100 w-sm-auto" method="get" action="{{ url_for('dashboard') }}">
+            <div class="input-group input-group-sm">
+              <input name="q" value="{{ q or '' }}" class="form-control" placeholder="ค้นหา">
+              <button class="btn btn-outline-primary">ค้นหา</button>
+            </div>
+          </form>
+        </div>
 
-    <table class="table table-sm mt-2">
+        <div class="table-responsive mt-3">
+          <table class="table table-sm table-hover">
       <thead>
         <tr><th>วันที่</th><th>รายการ</th><th>ประเภท</th><th>จำนวน</th><th>คำสั่ง</th></tr>
       </thead>
@@ -103,26 +148,33 @@
       </ul>
     </nav>
 
-    <hr>
-    <h5>Chart</h5>
-    <div class="row mb-2">
-      <div class="col-md-3">
-        <select id="chart-kind" class="form-select">
-        <option value="income">รายรับ</option>
-        <option value="expense">รายจ่าย</option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <input id="chart-month" type="number" min="1" max="12" value="{{ month }}" class="form-control">
-      </div>
-      <div class="col-md-3">
-        <input id="chart-year" type="number" min="2000" value="{{ year }}" class="form-control">
-      </div>
-      <div class="col-md-3">
-        <button id="load-chart" class="btn btn-primary">โหลด</button>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">แผนภูมิ</h5>
+        <div class="row g-2">
+          <div class="col-sm-3 col-6">
+            <label class="form-label small">ประเภท</label>
+            <select id="chart-kind" class="form-select form-select-sm">
+              <option value="income">รายรับ</option>
+              <option value="expense">รายจ่าย</option>
+            </select>
+          </div>
+          <div class="col-sm-3 col-6">
+            <label class="form-label small">เดือน</label>
+            <input id="chart-month" type="number" min="1" max="12" value="{{ month }}" class="form-control form-control-sm">
+          </div>
+          <div class="col-sm-3 col-6">
+            <label class="form-label small">ปี</label>
+            <input id="chart-year" type="number" min="2000" value="{{ year }}" class="form-control form-control-sm">
+          </div>
+          <div class="col-sm-3 col-6">
+            <label class="form-label small">&nbsp;</label>
+            <button id="load-chart" class="btn btn-primary btn-sm w-100">โหลด</button>
+          </div>
+        </div>
       </div>
     </div>
-    <div style="width: 70%; margin: 0 auto;">
+    <div style="width: 85%; margin: 0 auto;">
       <canvas id="pieChart"></canvas>
     </div>
     

@@ -1,0 +1,80 @@
+/* Custom styles */
+@media (max-width: 576px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .pagination {
+        font-size: 0.875rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+    }
+}
+
+/* Make cards look better on mobile */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+/* Better spacing for form groups */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+/* Make table more readable on mobile */
+.table-responsive {
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Better button styles */
+.btn {
+    border-radius: 0.25rem;
+}
+
+/* Chart container responsiveness */
+.chart-container {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Summary cards */
+.summary-card {
+    transition: transform 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Modal improvements */
+.modal-content {
+    border-radius: 0.5rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
