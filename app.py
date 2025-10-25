@@ -95,10 +95,10 @@ def create_tables():
 
 # Utility functions
 def to_thai_time(dt):
-    """Convert UTC datetime to Thailand timezone"""
-    if dt.tzinfo is None:  # If naive datetime, assume it's UTC
-        dt = pytz.UTC.localize(dt)
-    return dt.astimezone(TH_TZ)
+    """ฐานข้อมูลเก็บเป็นเวลาไทยแล้ว ไม่ต้องแปลง timezone ซ้ำ"""
+    if dt is None:
+        return None
+    return dt
 
 def now_thai():
     """Get current time in Thailand timezone"""
